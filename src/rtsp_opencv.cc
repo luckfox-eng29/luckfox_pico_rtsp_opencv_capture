@@ -190,6 +190,7 @@ int main(int argc, char *argv[]) {
 	//opencv 
 	cv::VideoCapture cap;
     cv::Mat bgr;
+
     cap.set(cv::CAP_PROP_FRAME_WIDTH,  width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.open(0);
@@ -230,6 +231,7 @@ int main(int argc, char *argv[]) {
 	h264_frame.stVFrame.u32FrameFlag = 160;
 	h264_frame.stVFrame.pMbBlk = src_Blk;
 	unsigned char *data = (unsigned char *)RK_MPI_MB_Handle2VirAddr(src_Blk);
+	cv::Mat frame(cv::Size(width,height),CV_8UC3,data);
 
 
 	// rtsp init	
@@ -256,17 +258,8 @@ int main(int argc, char *argv[]) {
 		cv::putText(bgr,fps_text,
 						cv::Point(40, 40),
 						cv::FONT_HERSHEY_SIMPLEX,1,
-						cv::Scalar(0,255,0),2);
-
-        for (int y = 0; y < height; ++y) {
-          for (int x = 0; x < width; ++x) {
-              cv::Vec3b pixel = bgr.at<cv::Vec3b>(y, x);
-              data[(y * width + x) * 3 + 0] = pixel[2]; // Red
-              data[(y * width + x) * 3 + 1] = pixel[1]; // Green
-              data[(y * width + x) * 3 + 2] = pixel[0]; // Blue
-            }
-        }
-
+						cv::Scalar(0,255,0),2);	
+		cv::cvtColor(bgr, frame, cv::COLOR_BGR2RGB);
 		// send stream
 		// encode H264
 		RK_MPI_VENC_SendFrame(0, &h264_frame,-1);
